@@ -16,9 +16,12 @@ interface SettingsPanelProps {
 }
 
 const PRESETS = [
-  { name: 'Slider (160×48)', width: 160, height: 48 },
   { name: 'Small (120×44)', width: 120, height: 44 },
+  { name: 'Slider (160×48)', width: 160, height: 48 },
   { name: 'Large (200×56)', width: 200, height: 56 },
+  { name: 'XLarge (240×64)', width: 240, height: 64 },
+  { name: '2XLarge (280×72)', width: 280, height: 72 },
+  { name: '3XLarge (320×80)', width: 320, height: 80 },
 ]
 
 export function SettingsPanel({
@@ -47,7 +50,11 @@ export function SettingsPanel({
                   height: preset.height,
                 })
               }
-              className="px-4 py-2 text-left text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className={`px-4 py-2 text-left text-sm font-medium rounded-lg transition-colors ${
+                width === preset.width && height === preset.height
+                  ? 'bg-blue-500 text-white border-blue-500'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              }`}
             >
               {preset.name}
             </button>
