@@ -17,6 +17,8 @@ export default function LogoNormalizerPage() {
   const [trimMode, setTrimMode] = useState<'transparent' | 'white' | 'both' | 'none'>('transparent')
   const [trimEnabled, setTrimEnabled] = useState(true)
   const [whiteTrimTolerance, setWhiteTrimTolerance] = useState(15)
+  const [removeWhiteBackground, setRemoveWhiteBackground] = useState(false)
+  const [whiteBackgroundTolerance, setWhiteBackgroundTolerance] = useState(20)
   const [outputFormat, setOutputFormat] = useState<'png' | 'webp'>('png')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -65,6 +67,8 @@ export default function LogoNormalizerPage() {
     trimMode: 'transparent' | 'white' | 'both' | 'none'
     trimEnabled: boolean
     whiteTrimTolerance: number
+    removeWhiteBackground: boolean
+    whiteBackgroundTolerance: number
     outputFormat: 'png' | 'webp'
   }>) => {
     if (settings.width !== undefined) setWidth(settings.width)
@@ -75,6 +79,8 @@ export default function LogoNormalizerPage() {
     if (settings.trimMode !== undefined) setTrimMode(settings.trimMode)
     if (settings.trimEnabled !== undefined) setTrimEnabled(settings.trimEnabled)
     if (settings.whiteTrimTolerance !== undefined) setWhiteTrimTolerance(settings.whiteTrimTolerance)
+    if (settings.removeWhiteBackground !== undefined) setRemoveWhiteBackground(settings.removeWhiteBackground)
+    if (settings.whiteBackgroundTolerance !== undefined) setWhiteBackgroundTolerance(settings.whiteBackgroundTolerance)
     if (settings.outputFormat !== undefined) setOutputFormat(settings.outputFormat)
   }
 
@@ -105,6 +111,8 @@ export default function LogoNormalizerPage() {
           trimMode,
           trimEnabled,
           whiteTrimTolerance,
+          removeWhiteBackground,
+          whiteBackgroundTolerance,
           outputFormat,
         })
       )
@@ -273,6 +281,8 @@ export default function LogoNormalizerPage() {
               trimMode={trimMode}
               trimEnabled={trimEnabled}
               whiteTrimTolerance={whiteTrimTolerance}
+              removeWhiteBackground={removeWhiteBackground}
+              whiteBackgroundTolerance={whiteBackgroundTolerance}
               outputFormat={outputFormat}
               onChange={handleSettingsChange}
             />

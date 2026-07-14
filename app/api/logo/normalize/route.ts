@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
+import decodeIco from 'decode-ico'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
-const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']
+const ALLOWED_FORMATS: Record<string, string> = {
+  png: 'image/png',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+}
 const MAX_DIMENSION = 10000
 const MIN_DIMENSION = 1
 const MAX_WIDTH = 2000
@@ -17,6 +23,8 @@ interface NormalizeSettings {
   trimMode?: 'transparent' | 'white' | 'both' | 'none'
   trimEnabled?: boolean
   whiteTrimTolerance?: number
+  removeWhiteBackground?: boolean
+  whiteBackgroundTolerance?: number
   outputFormat?: 'png' | 'webp'
 }
 
@@ -33,16 +41,68 @@ interface ResolvedSettings extends NormalizeSettings {
   height: number
   padding: number
   whiteTrimTolerance: number
+  whiteBackgroundTolerance: number
 }
 
-async function validateFile(buffer: Buffer, mimeType: string): Promise<void> {
+function isIco(buffer: Buffer): boolean {
+  return (
+    buffer.length >= 4 &&
+    buffer[0] === 0 &&
+    buffer[1] === 0 &&
+    buffer[2] === 1 &&
+    buffer[3] === 0
+  )
+}
+
+async function convertIcoToPng(buffer: Buffer): Promise<Buffer> {
+  let frames
+  try {
+    frames = decodeIco(buffer)
+  } catch {
+    throw new Error('Unable to read ICO file. The file may be corrupt.')
+  }
+
+  if (!frames || frames.length === 0) {
+    throw new Error('Unable to read ICO file. No image frames found.')
+  }
+
+  const largest = frames.reduce((a, b) =>
+    a.width * a.height >= b.width * b.height ? a : b
+  )
+
+  const frameBuffer = Buffer.from(largest.data)
+
+  // PNG-encoded frames contain compressed PNG bytes; BMP frames contain raw RGBA.
+  const source =
+    largest.type === 'png'
+      ? sharp(frameBuffer)
+      : sharp(frameBuffer, {
+          raw: { width: largest.width, height: largest.height, channels: 4 },
+        })
+
+  return source.png().toBuffer()
+}
+
+async function validateFile(buffer: Buffer): Promise<string> {
   if (buffer.length > MAX_FILE_SIZE) {
     throw new Error(`File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`)
   }
 
-  if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
-    throw new Error(`Unsupported file type: ${mimeType}. Allowed: PNG, JPEG, WebP, SVG`)
+  let format: string | undefined
+  try {
+    format = (await sharp(buffer).metadata()).format
+  } catch {
+    throw new Error('Unable to read image. The file may be corrupt or not a supported image.')
   }
+
+  const mimeType = format ? ALLOWED_FORMATS[format] : undefined
+  if (!mimeType) {
+    throw new Error(
+      `Unsupported image format: ${format || 'unknown'}. Allowed: PNG, JPEG, WebP, SVG`
+    )
+  }
+
+  return mimeType
 }
 
 function parseAndValidateSettings(settings: NormalizeSettings): ResolvedSettings {
@@ -50,6 +110,7 @@ function parseAndValidateSettings(settings: NormalizeSettings): ResolvedSettings
   const height = Number.parseInt(String(settings.height), 10)
   const padding = Number.parseInt(String(settings.padding), 10)
   const whiteTrimTolerance = Number.parseInt(String(settings.whiteTrimTolerance || 20), 10)
+  const whiteBackgroundTolerance = Number.parseInt(String(settings.whiteBackgroundTolerance ?? 20), 10)
 
   if (!Number.isInteger(width) || width < MIN_DIMENSION || width > MAX_WIDTH) {
     throw new Error(`Width must be an integer between ${MIN_DIMENSION} and ${MAX_WIDTH}`)
@@ -67,6 +128,10 @@ function parseAndValidateSettings(settings: NormalizeSettings): ResolvedSettings
     throw new Error('White trim tolerance must be an integer between 0 and 60')
   }
 
+  if (!Number.isInteger(whiteBackgroundTolerance) || whiteBackgroundTolerance < 0 || whiteBackgroundTolerance > 100) {
+    throw new Error('White background tolerance must be an integer between 0 and 100')
+  }
+
   const contentWidth = width - padding * 2
   const contentHeight = height - padding * 2
 
@@ -80,7 +145,44 @@ function parseAndValidateSettings(settings: NormalizeSettings): ResolvedSettings
     height,
     padding,
     whiteTrimTolerance,
+    whiteBackgroundTolerance,
   }
+}
+
+async function removeWhiteBackground(
+  image: sharp.Sharp,
+  tolerance: number
+): Promise<sharp.Sharp> {
+  const { data, info } = await image
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+
+  const { width, height, channels } = info
+
+  const cutoff = 255 - Math.round((tolerance / 100) * 255)
+  const feather = Math.max(1, Math.round((tolerance / 100) * 60))
+
+  for (let i = 0; i < data.length; i += channels) {
+    const r = data[i]
+    const g = data[i + 1]
+    const b = data[i + 2]
+    const minChannel = Math.min(r, g, b)
+
+    if (minChannel >= cutoff) {
+      const featherStart = 255 - feather
+      if (minChannel >= 255 || feather <= 0) {
+        data[i + 3] = 0
+      } else if (minChannel <= featherStart) {
+        data[i + 3] = data[i + 3]
+      } else {
+        const ratio = (255 - minChannel) / feather
+        data[i + 3] = Math.round(data[i + 3] * ratio)
+      }
+    }
+  }
+
+  return sharp(data, { raw: { width, height, channels } })
 }
 
 async function applySmartTrim(
@@ -169,6 +271,10 @@ async function processImage(
     image = sharp(buffer, {
       density: Math.max(settings.width, settings.height) / 100,
     })
+  }
+
+  if (settings.removeWhiteBackground) {
+    image = await removeWhiteBackground(image, settings.whiteBackgroundTolerance)
   }
 
   let trimResult: TrimResult | undefined
@@ -265,9 +371,13 @@ export async function POST(request: NextRequest) {
 
     const buffer = await file.arrayBuffer()
     const uint8Array = new Uint8Array(buffer)
-    const nodeBuffer = Buffer.from(uint8Array)
+    let nodeBuffer: Buffer = Buffer.from(uint8Array)
 
-    await validateFile(nodeBuffer, file.type)
+    if (isIco(nodeBuffer)) {
+      nodeBuffer = await convertIcoToPng(nodeBuffer)
+    }
+
+    const detectedMimeType = await validateFile(nodeBuffer)
 
     if (process.env.NODE_ENV === 'development') {
       console.log('[Logo Normalizer] Resolved settings:', {
@@ -283,7 +393,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const { outputBuffer, trimResult } = await processImage(nodeBuffer, file.type, settings)
+    const { outputBuffer, trimResult } = await processImage(nodeBuffer, detectedMimeType, settings)
 
     const originalName = file.name.replace(/\.[^/.]+$/, '')
     const extension = settings.outputFormat === 'webp' ? 'webp' : 'png'
