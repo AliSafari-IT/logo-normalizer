@@ -45,8 +45,8 @@ export function UploadDropzone({ onFileSelect, disabled }: UploadDropzoneProps) 
       onClick={() => !disabled && fileInputRef.current?.click()}
       className={`relative border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
         isDragging
-          ? 'border-blue-500 bg-blue-50'
-          : 'border-gray-300 bg-gray-50 hover:border-gray-400'
+          ? 'border-blue-500 bg-blue-950/30'
+          : 'border-slate-700 bg-slate-900/50 hover:border-slate-500'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       <input
@@ -57,11 +57,11 @@ export function UploadDropzone({ onFileSelect, disabled }: UploadDropzoneProps) 
         className="hidden"
         disabled={disabled}
       />
-      <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-      <p className="text-lg font-semibold text-gray-700 mb-2">
+      <Upload className="w-12 h-12 mx-auto mb-4 text-slate-500" />
+      <p className="text-lg font-semibold text-slate-200 mb-2">
         Drop your logo here or click to browse
       </p>
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-slate-500">
         Supported formats: PNG, JPEG, WebP, SVG (Max 5MB)
       </p>
     </div>

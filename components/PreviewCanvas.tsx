@@ -18,9 +18,9 @@ export function PreviewCanvas({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Preview</h3>
+        <h3 className="text-lg font-semibold text-slate-100 mb-4">Preview</h3>
         <div
-          className="checkerboard rounded-lg border border-gray-300 flex items-center justify-center mx-auto"
+          className="checkerboard rounded-lg border border-slate-700 flex items-center justify-center mx-auto"
           style={{
             width: `${Math.min(width, 400)}px`,
             height: `${Math.min(height, 400)}px`,
@@ -50,10 +50,10 @@ export function PreviewCanvas({
               )}
             </>
           ) : (
-            <p className="text-gray-400 text-sm">No preview available</p>
+            <p className="text-slate-500 text-sm">No preview available</p>
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-2 text-center">
+        <p className="text-xs text-slate-500 mt-2 text-center">
           {width}×{height}px
         </p>
       </div>
