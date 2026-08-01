@@ -4,9 +4,11 @@ import React, { useState } from 'react'
 import { UploadDropzone } from '@/components/UploadDropzone'
 import { SettingsPanel } from '@/components/SettingsPanel'
 import { PreviewCanvas } from '@/components/PreviewCanvas'
-import { Download, Loader2 } from 'lucide-react'
+import { HelpModal } from '@/components/HelpModal'
+import { Download, Loader2, HelpCircle } from 'lucide-react'
 
 export default function LogoNormalizerPage() {
+  const [helpOpen, setHelpOpen] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [width, setWidth] = useState(160)
@@ -117,7 +119,7 @@ export default function LogoNormalizerPage() {
         })
       )
 
-      const response = await fetch('/api/logo/normalize', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/api/logo/normalize`, {
         method: 'POST',
         body: formData,
       })
@@ -184,31 +186,42 @@ export default function LogoNormalizerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
+    <div className="min-h-screen bg-slate-950 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Logo Normalizer</h1>
-          <p className="text-lg text-gray-600">
-            Upload a logo and generate consistent sized outputs for your partner slider
-          </p>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-slate-100 mb-2">Logo Normalizer</h1>
+            <p className="text-lg text-slate-400">
+              Upload a logo and generate consistent sized outputs for your partner slider
+            </p>
+          </div>
+          <button
+            onClick={() => setHelpOpen(true)}
+            className="shrink-0 flex items-center gap-2 px-3 py-2 text-sm font-medium bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 rounded-lg transition-colors"
+          >
+            <HelpCircle className="w-4 h-4" />
+            How to use
+          </button>
         </div>
+
+        <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Logo</h2>
+            <div className="bg-slate-900 rounded-lg shadow-md border border-slate-800 p-6">
+              <h2 className="text-xl font-semibold text-slate-100 mb-4">Upload Logo</h2>
               <UploadDropzone onFileSelect={handleFileSelect} disabled={loading} />
 
               {fileInfo && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-sm text-gray-700">
-                    <span className="font-semibold">File:</span> {fileInfo.name}
+                <div className="mt-4 p-4 bg-blue-950/30 rounded-lg border border-blue-800/50">
+                  <p className="text-sm text-slate-300">
+                    <span className="font-semibold text-slate-200">File:</span> {fileInfo.name}
                   </p>
-                  <p className="text-sm text-gray-700">
-                    <span className="font-semibold">Type:</span> {fileInfo.type}
+                  <p className="text-sm text-slate-300">
+                    <span className="font-semibold text-slate-200">Type:</span> {fileInfo.type}
                   </p>
-                  <p className="text-sm text-gray-700">
-                    <span className="font-semibold">Size:</span>{' '}
+                  <p className="text-sm text-slate-300">
+                    <span className="font-semibold text-slate-200">Size:</span>{' '}
                     {(fileInfo.size / 1024).toFixed(2)} KB
                   </p>
                 </div>
@@ -216,35 +229,35 @@ export default function LogoNormalizerPage() {
             </div>
 
             {preview && (
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Original Preview</h2>
+              <div className="bg-slate-900 rounded-lg shadow-md border border-slate-800 p-6">
+                <h2 className="text-xl font-semibold text-slate-100 mb-4">Original Preview</h2>
                 <div className="flex justify-center">
                   <img
                     src={preview}
                     alt="Original"
-                    className="max-w-full max-h-64 rounded-lg border border-gray-300"
+                    className="max-w-full max-h-64 rounded-lg border border-slate-700"
                   />
                 </div>
               </div>
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800 font-semibold">Error</p>
-                <p className="text-red-700 text-sm">{error}</p>
+              <div className="bg-red-950/30 border border-red-800/50 rounded-lg p-4">
+                <p className="text-red-300 font-semibold">Error</p>
+                <p className="text-red-400 text-sm">{error}</p>
               </div>
             )}
 
             {trimWarning && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-yellow-800 text-sm">{trimWarning}</p>
+              <div className="bg-yellow-950/30 border border-yellow-800/50 rounded-lg p-4">
+                <p className="text-yellow-300 text-sm">{trimWarning}</p>
               </div>
             )}
 
             <button
               onClick={handleGenerate}
               disabled={!file || loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -262,7 +275,7 @@ export default function LogoNormalizerPage() {
             {outputBlob && (
               <button
                 onClick={handleDownload}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <Download className="w-5 h-5" />
                 Download Output
@@ -270,8 +283,8 @@ export default function LogoNormalizerPage() {
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 h-fit sticky top-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Settings</h2>
+          <div className="bg-slate-900 rounded-lg shadow-md border border-slate-800 p-6 h-fit sticky top-8">
+            <h2 className="text-xl font-semibold text-slate-100 mb-6">Settings</h2>
             <SettingsPanel
               width={width}
               height={height}
@@ -290,52 +303,47 @@ export default function LogoNormalizerPage() {
         </div>
 
         {outputBlob && outputBlobUrl && (
-          <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Output Preview (Server-Generated)</h2>
-            <div className="flex justify-center" style={{
-              backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Crect width=\'10\' height=\'10\' fill=\'%23f0f0f0\'/%3E%3Crect x=\'10\' y=\'10\' width=\'10\' height=\'10\' fill=\'%23f0f0f0\'/%3E%3C/svg%3E")',
-              backgroundPosition: '0 0, 10px 10px',
-              backgroundSize: '20px 20px',
-              padding: '20px',
-            }}>
+          <div className="mt-8 bg-slate-900 rounded-lg shadow-md border border-slate-800 p-6">
+            <h2 className="text-xl font-semibold text-slate-100 mb-4">Output Preview (Server-Generated)</h2>
+            <div className="flex justify-center checkerboard rounded-lg" style={{ padding: '20px' }}>
               <img
                 src={outputBlobUrl}
                 alt="Output"
-                className="max-w-full max-h-96 rounded-lg border border-gray-300"
+                className="max-w-full max-h-96 rounded-lg border border-slate-700"
               />
             </div>
 
             {debugInfo && (
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-3">Debug Info (Dev Mode)</h3>
+              <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                <h3 className="font-semibold text-slate-100 mb-3">Debug Info (Dev Mode)</h3>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="font-medium text-gray-700">Dimensions:</span>
-                    <span className="text-gray-600"> {`${debugInfo.actualWidth}×${debugInfo.actualHeight}px`}</span>
+                    <span className="font-medium text-slate-300">Dimensions:</span>
+                    <span className="text-slate-400"> {`${debugInfo.actualWidth}×${debugInfo.actualHeight}px`}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">Padding:</span>
-                    <span className="text-gray-600"> {`${debugInfo.padding}px`}</span>
+                    <span className="font-medium text-slate-300">Padding:</span>
+                    <span className="text-slate-400"> {`${debugInfo.padding}px`}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">Fit Mode:</span>
-                    <span className="text-gray-600"> {debugInfo.fitMode}</span>
+                    <span className="font-medium text-slate-300">Fit Mode:</span>
+                    <span className="text-slate-400"> {debugInfo.fitMode}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">Background:</span>
-                    <span className="text-gray-600"> {debugInfo.background}</span>
+                    <span className="font-medium text-slate-300">Background:</span>
+                    <span className="text-slate-400"> {debugInfo.background}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">Blob Size:</span>
-                    <span className="text-gray-600"> {`${(debugInfo.blobSize / 1024).toFixed(2)} KB`}</span>
+                    <span className="font-medium text-slate-300">Blob Size:</span>
+                    <span className="text-slate-400"> {`${(debugInfo.blobSize / 1024).toFixed(2)} KB`}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">Blob Type:</span>
-                    <span className="text-gray-600"> {debugInfo.blobType}</span>
+                    <span className="font-medium text-slate-300">Blob Type:</span>
+                    <span className="text-slate-400"> {debugInfo.blobType}</span>
                   </div>
                   <div className="col-span-2">
-                    <span className="font-medium text-gray-700">Filename:</span>
-                    <span className="text-gray-600"> {debugInfo.filename}</span>
+                    <span className="font-medium text-slate-300">Filename:</span>
+                    <span className="text-slate-400"> {debugInfo.filename}</span>
                   </div>
                 </div>
               </div>

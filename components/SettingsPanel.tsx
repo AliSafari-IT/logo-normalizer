@@ -52,7 +52,7 @@ export function SettingsPanel({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Presets</h3>
+        <h3 className="text-lg font-semibold text-slate-100 mb-4">Presets</h3>
 
         <div className="flex gap-2 mb-3">
           <button
@@ -60,7 +60,7 @@ export function SettingsPanel({
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               orientation === 'landscape'
                 ? 'bg-blue-500 text-white'
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                : 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700'
             }`}
           >
             Landscape
@@ -70,7 +70,7 @@ export function SettingsPanel({
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               orientation === 'portrait'
                 ? 'bg-blue-500 text-white'
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                : 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700'
             }`}
           >
             Portrait
@@ -84,10 +84,10 @@ export function SettingsPanel({
               <button
                 key={preset.name}
                 onClick={() => onChange(dims)}
-                className={`px-4 py-2 text-left text-sm font-medium rounded-lg transition-colors ${
+                className={`px-4 py-2 text-left text-sm font-medium rounded-lg border transition-colors ${
                   width === dims.width && height === dims.height
                     ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
                 }`}
               >
                 {preset.label} ({dims.width}×{dims.height})
@@ -100,7 +100,7 @@ export function SettingsPanel({
       <div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Width (px)
             </label>
             <input
@@ -109,11 +109,11 @@ export function SettingsPanel({
               max="10000"
               value={width}
               onChange={(e) => onChange({ width: parseInt(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Height (px)
             </label>
             <input
@@ -122,7 +122,7 @@ export function SettingsPanel({
               max="10000"
               value={height}
               onChange={(e) => onChange({ height: parseInt(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -132,14 +132,14 @@ export function SettingsPanel({
             onChange({ width: height, height: width })
             setOrientation(width > height ? 'portrait' : 'landscape')
           }}
-          className="mt-2 w-full px-3 py-2 rounded-lg text-sm font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+          className="mt-2 w-full px-3 py-2 rounded-lg text-sm font-medium bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors"
         >
           Swap width &amp; height
         </button>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-300 mb-2">
           Fit Mode
         </label>
         <select
@@ -147,13 +147,13 @@ export function SettingsPanel({
           onChange={(e) =>
             onChange({ fitMode: e.target.value as 'contain' | 'cover' | 'stretch' })
           }
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="contain">Contain (preserve aspect ratio, add padding)</option>
           <option value="cover">Cover (fill slot, crop overflow)</option>
           <option value="stretch">Stretch (force exact dimensions, may distort)</option>
         </select>
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-slate-500 mt-2">
           {fitMode === 'contain' &&
             'Preserves aspect ratio and adds padding to fill the slot.'}
           {fitMode === 'cover' && 'Fills the slot completely, may crop the logo.'}
@@ -162,7 +162,7 @@ export function SettingsPanel({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-300 mb-2">
           Padding (px): {padding}
         </label>
         <input
@@ -171,12 +171,12 @@ export function SettingsPanel({
           max="40"
           value={padding}
           onChange={(e) => onChange({ padding: parseInt(e.target.value) })}
-          className="w-full"
+          className="w-full accent-blue-500"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-300 mb-2">
           Background
         </label>
         <div className="flex gap-2">
@@ -185,7 +185,7 @@ export function SettingsPanel({
             className={`flex-1 px-3 py-2 rounded-lg font-medium transition-colors ${
               background === 'transparent'
                 ? 'bg-blue-500 text-white'
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                : 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700'
             }`}
           >
             Transparent
@@ -195,40 +195,40 @@ export function SettingsPanel({
               type="color"
               value={background === 'transparent' ? '#ffffff' : background}
               onChange={(e) => onChange({ background: e.target.value })}
-              className="w-12 h-10 rounded-lg cursor-pointer border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-12 h-10 rounded-lg cursor-pointer bg-slate-800 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="text"
               value={background === 'transparent' ? '#ffffff' : background}
               onChange={(e) => onChange({ background: e.target.value })}
               placeholder="#FFFFFF"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+              className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
             />
           </div>
         </div>
       </div>
 
-      <div className="border-t pt-4">
+      <div className="border-t border-slate-800 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <input
             type="checkbox"
             id="removeWhiteBackground"
             checked={removeWhiteBackground}
             onChange={(e) => onChange({ removeWhiteBackground: e.target.checked })}
-            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+            className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-blue-600 focus:ring-2 focus:ring-blue-500"
           />
-          <label htmlFor="removeWhiteBackground" className="text-sm font-medium text-gray-700">
+          <label htmlFor="removeWhiteBackground" className="text-sm font-medium text-slate-300">
             Remove white background
           </label>
         </div>
-        <p className="text-xs text-gray-500 mb-3">
+        <p className="text-xs text-slate-500 mb-3">
           Converts near-white pixels across the whole image to transparent (for logos saved on a white background).
         </p>
 
         {removeWhiteBackground && (
-          <div className="space-y-3 pl-6 border-l-2 border-blue-200">
+          <div className="space-y-3 pl-6 border-l-2 border-blue-900/50">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 White Background Tolerance: {whiteBackgroundTolerance}
               </label>
               <input
@@ -237,9 +237,9 @@ export function SettingsPanel({
                 max="100"
                 value={whiteBackgroundTolerance}
                 onChange={(e) => onChange({ whiteBackgroundTolerance: parseInt(e.target.value) })}
-                className="w-full"
+                className="w-full accent-blue-500"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Higher values remove more off-white shades (0-100, default 20).
               </p>
             </div>
@@ -247,24 +247,24 @@ export function SettingsPanel({
         )}
       </div>
 
-      <div className="border-t pt-4">
+      <div className="border-t border-slate-800 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <input
             type="checkbox"
             id="trimEnabled"
             checked={trimEnabled}
             onChange={(e) => onChange({ trimEnabled: e.target.checked })}
-            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+            className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-blue-600 focus:ring-2 focus:ring-blue-500"
           />
-          <label htmlFor="trimEnabled" className="text-sm font-medium text-gray-700">
+          <label htmlFor="trimEnabled" className="text-sm font-medium text-slate-300">
             Smart trim margins
           </label>
         </div>
 
         {trimEnabled && (
-          <div className="space-y-3 pl-6 border-l-2 border-blue-200">
+          <div className="space-y-3 pl-6 border-l-2 border-blue-900/50">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Trim Mode
               </label>
               <select
@@ -272,12 +272,12 @@ export function SettingsPanel({
                 onChange={(e) =>
                   onChange({ trimMode: e.target.value as 'transparent' | 'white' | 'both' | 'none' })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="transparent">Transparent trim (default)</option>
                 <option value="white">White trim (PNG only)</option>
               </select>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 {trimMode === 'transparent' && 'Removes transparent padding around logo'}
                 {trimMode === 'white' && 'Removes near-white padding (configurable tolerance)'}
                 {trimMode === 'both' && 'Removes both transparent and white padding'}
@@ -286,7 +286,7 @@ export function SettingsPanel({
 
             {(trimMode === 'white' || trimMode === 'both') && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   White Trim Tolerance: {whiteTrimTolerance}
                 </label>
                 <input
@@ -295,9 +295,9 @@ export function SettingsPanel({
                   max="60"
                   value={whiteTrimTolerance}
                   onChange={(e) => onChange({ whiteTrimTolerance: parseInt(e.target.value) })}
-                  className="w-full"
+                  className="w-full accent-blue-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Higher values trim more aggressively (0-60, default 20)
                 </p>
               </div>
@@ -307,13 +307,13 @@ export function SettingsPanel({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-slate-300 mb-2">
           Output Format
         </label>
         <select
           value={outputFormat}
           onChange={(e) => onChange({ outputFormat: e.target.value as 'png' | 'webp' })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="png">PNG (lossless, larger file)</option>
           <option value="webp">WebP (modern, smaller file)</option>
