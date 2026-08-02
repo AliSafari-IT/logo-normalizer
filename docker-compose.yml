@@ -1,0 +1,14 @@
+name: logo-normalizer
+
+services:
+  logo-normalizer:
+    build: .
+    container_name: logo-normalizer
+    restart: unless-stopped
+    networks:
+      - asafarim_net
+
+networks:
+  asafarim_net:
+    external: true
+    name: asafarim-com_asafarim_net

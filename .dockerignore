@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+.dockerignore
+Dockerfile
+docker-compose.yml
+run.ps1
+redeploy.ps1
+tsconfig.tsbuildinfo
+next-env.d.ts
