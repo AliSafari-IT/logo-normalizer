@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function Home() {
-  redirect('/tools/logo-normalizer');
+  redirect(`${process.env.NEXT_PUBLIC_BASE_PATH}/tools/logo-normalizer`);
 }
