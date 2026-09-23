@@ -5,6 +5,7 @@ import { UploadDropzone } from '@/components/UploadDropzone'
 import { SettingsPanel } from '@/components/SettingsPanel'
 import { PreviewCanvas } from '@/components/PreviewCanvas'
 import { HelpModal } from '@/components/HelpModal'
+import { LogoMark } from '@/components/Logo'
 import { Download, Loader2, HelpCircle } from 'lucide-react'
 
 export default function Home() {
@@ -190,7 +191,15 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-slate-100 mb-2">Logo Normalizer</h1>
+            <div className="flex items-center gap-4 mb-2">
+              <LogoMark className="w-12 h-12 drop-shadow-[0_0_12px_rgba(34,211,238,0.25)]" />
+              <h1 className="text-4xl font-bold text-slate-100">
+                Logo{' '}
+                <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                  Normalizer
+                </span>
+              </h1>
+            </div>
             <p className="text-lg text-slate-400">
               Upload a logo and generate consistent sized outputs for your partner slider
             </p>
