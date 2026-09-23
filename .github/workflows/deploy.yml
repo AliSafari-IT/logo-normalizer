@@ -110,13 +110,15 @@ jobs:
             cd /var/repos/logo-normalizer
             git fetch --prune origin main
             # Extract the target commit's vps-deploy.sh into an untracked,
-            # uniquely-named copy under scripts/ and run THAT, instead of
+            # uniquely-named copy at the repo root and run THAT, instead of
             # executing the tracked file directly while the script itself
             # does `git reset --hard` — self-modification mid-execution makes
             # bash keep reading the pre-reset bytes (a stale version of the
             # script). Running from a separate, untracked file means the
-            # internal reset can never touch the file bash is reading.
-            BOOTSTRAP="scripts/.vps-deploy.${IMAGE_TAG}.sh"
+            # internal reset can never touch the file bash is reading. It
+            # must live at the root: `git fetch` above does not update the
+            # working tree, so scripts/ may not exist in it yet.
+            BOOTSTRAP=".vps-deploy.${IMAGE_TAG}.sh"
             trap 'rm -f "$BOOTSTRAP"' EXIT
             git show "${IMAGE_TAG}:scripts/vps-deploy.sh" > "$BOOTSTRAP"
             bash "$BOOTSTRAP"
