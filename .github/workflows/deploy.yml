@@ -1,0 +1,122 @@
+name: Deploy to VPS
+
+# Builds the app image in GitHub Actions, publishes it to GHCR, then deploys
+# the exact commit SHA to the VPS. The VPS only pulls and starts the image;
+# it never compiles the app during a rollout.
+#
+# The GITHUB_TOKEN logs in to GHCR for both publishing and the short-lived
+# remote pull. It is not persisted on the VPS.
+#
+# Required repository secrets (Settings -> Secrets and variables -> Actions):
+#   VPS_HOST     e.g. 82.25.116.73
+#   VPS_USER     e.g. root
+#   VPS_SSH_KEY  private key whose public key is in the VPS authorized_keys
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: logo-normalizer-vps-deploy
+  # main is linear: a newer revision already contains every earlier commit, so
+  # do not spend another deploy on an obsolete revision. The VPS script also
+  # holds an exclusive lock if a canceled SSH process takes time to exit.
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_REPOSITORY: ghcr.io/alisafari-it/logo-normalizer
+
+jobs:
+  build-image:
+    name: Build image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build image (and publish on main)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ env.IMAGE_REPOSITORY }}:${{ github.sha }}
+            ${{ env.IMAGE_REPOSITORY }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=logo-normalizer
+          cache-to: type=gha,mode=max,scope=logo-normalizer
+
+  deploy:
+    name: Deploy to VPS
+    needs: build-image
+    # PRs only verify that the image builds; pushes to main and manual runs deploy.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_REPOSITORY: ghcr.io/alisafari-it/logo-normalizer
+      IMAGE_TAG: ${{ github.sha }}
+      GHCR_USERNAME: ${{ github.actor }}
+      GHCR_TOKEN: ${{ github.token }}
+    steps:
+      # Preflight TCP :22 reachability before handing off to ssh-action, so a
+      # transient runner<->VPS network drop retries instead of failing the
+      # SSH handshake on the default 30s timeout.
+      - name: Wait for VPS reachable on :22 (retry)
+        run: |
+          host="${{ secrets.VPS_HOST }}"
+          for i in 1 2 3 4 5 6; do
+            if nc -z -w5 "$host" 22 2>/dev/null; then
+              echo "VPS reachable on :22 (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i/6 failed, retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::VPS unreachable on :22 after 6 attempts"
+          exit 1
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          timeout: 60s
+          command_timeout: 15m
+          envs: IMAGE_REPOSITORY,IMAGE_TAG,GHCR_USERNAME,GHCR_TOKEN
+          script: |
+            set -e
+            cd /var/repos/logo-normalizer
+            git fetch --prune origin main
+            # Extract the target commit's vps-deploy.sh into an untracked,
+            # uniquely-named copy under scripts/ and run THAT, instead of
+            # executing the tracked file directly while the script itself
+            # does `git reset --hard` — self-modification mid-execution makes
+            # bash keep reading the pre-reset bytes (a stale version of the
+            # script). Running from a separate, untracked file means the
+            # internal reset can never touch the file bash is reading.
+            BOOTSTRAP="scripts/.vps-deploy.${IMAGE_TAG}.sh"
+            trap 'rm -f "$BOOTSTRAP"' EXIT
+            git show "${IMAGE_TAG}:scripts/vps-deploy.sh" > "$BOOTSTRAP"
+            bash "$BOOTSTRAP"

@@ -2,7 +2,7 @@
 
 FROM node:18-alpine AS base
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+RUN corepack enable && corepack prepare pnpm@12.3.4 --activate
 
 FROM base AS deps
 WORKDIR /app

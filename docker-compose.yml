@@ -2,6 +2,7 @@ name: logo-normalizer
 
 services:
   logo-normalizer:
+    image: ${IMAGE_REPOSITORY:-ghcr.io/alisafari-it/logo-normalizer}:${IMAGE_TAG:-local}
     build: .
     container_name: logo-normalizer
     restart: unless-stopped
