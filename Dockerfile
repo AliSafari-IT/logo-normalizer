@@ -1,8 +1,7 @@
 # syntax=docker/dockerfile:1
 
 FROM node:18-alpine AS base
-ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN corepack enable && corepack prepare pnpm@12.3.4 --activate
+RUN npm install -g pnpm@10
 
 FROM base AS deps
 WORKDIR /app
